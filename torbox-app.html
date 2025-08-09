@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TorBox Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+    input, button { padding: 10px; margin: 5px; }
+    .results { margin-top: 20px; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>TorBox Search</h1>
+  <input type="text" id="searchQuery" placeholder="Enter search term">
+  <button onclick="doSearch()">Search</button>
+  <div class="results" id="results"></div>
+  <div class="error" id="error"></div>
+
+  <script>
+    const apiBase = 'https://worker-3py.pages.dev/';
+    const apiKey = 'f6bad65d-1a7d-4c4b-9232-9af122be3400';
+
+    async function doSearch() {
+      const query = document.getElementById('searchQuery').value.trim();
+      const resultsDiv = document.getElementById('results');
+      const errorDiv = document.getElementById('error');
+      resultsDiv.innerHTML = '';
+      errorDiv.innerHTML = '';
+
+      if (!query) {
+        errorDiv.textContent = 'Please enter a search term.';
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${apiBase}/search?q=${encodeURIComponent(query)}`, {
+          headers: { 'x-api-key': apiKey }
+        });
+
+        if (!resp.ok) {
+          const errText = await resp.text();
+          throw new Error(`API Error ${resp.status}: ${errText}`);
+        }
+
+        const data = await resp.json();
+
+        if (data && data.results && data.results.length > 0) {
+          data.results.forEach(item => {
+            const el = document.createElement('div');
+            el.textContent = item.title || JSON.stringify(item);
+            resultsDiv.appendChild(el);
+          });
+        } else {
+          resultsDiv.textContent = 'No results found.';
+        }
+      } catch (err) {
+        errorDiv.textContent = `Error: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
