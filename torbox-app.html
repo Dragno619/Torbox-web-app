@@ -116,8 +116,9 @@
         headers: { 'Authorization': `Bearer ` }
       });
       if(!resp.ok) {
-        throw new Error(`API error:  `);
-      }
+  const errorText = await resp.text();
+  throw new Error(`API error: ${resp.status} ${resp.statusText} - ${errorText}`);
+}
       const results = await resp.json();
       if(results.length === 0) {
         statusDiv.textContent = 'No results found.';
